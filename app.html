@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Vrlo jednostavna HTML5 igra</title>
+<style>
+    canvas {
+    border:1px solid #000000;
+    background-color: #f1f1f1;
+    }
+</style>
+    <script>
+            var myGamePieces = [];
+            var numberOfPieces;
+            var hitPieces = 0;
+            function startGame() {
+                myGamePieces = []
+                hitPieces = 0;
+                numberOfPieces = Math.floor(Math.random() * 6) + 2;
+                for(var i = 0; i < numberOfPieces; i++) {
+                    var myGamePiece = new component(30, 30, "red", Math.floor(Math.random() * 481), Math.floor(Math.random() * 271));
+                    myGamePieces.push(myGamePiece);
+                }
+                myGameArea.start();
+            }
+            var myGameArea = {
+                canvas : document.createElement("canvas"),
+                start : function() {
+                    this.canvas.id = "myGameCanvas";
+                    this.canvas.width = 480;
+                    this.canvas.height = 270;
+                    this.context = this.canvas.getContext("2d");
+                    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                    this.frameNo = 0;
+                    this.interval = setInterval(updateGameArea, 20);
+                    document.getElementById("myGameCanvas").addEventListener('click', (event) => {
+                        myGamePieces = myGamePieces.filter((piece) => {
+                            if((piece.x + piece.width/2) >= event.clientX && (piece.x - piece.width/2) <= event.clientX 
+                            && (piece.y + piece.height/2) >= event.clientY && (piece.y - piece.height/2) <= event.clientY) {
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        });
+                        hitPieces = numberOfPieces - myGamePieces.length;
+                        if(hitPieces == numberOfPieces) {
+                            this.clear();
+                            this.context.font = "25px Georgia";
+                            this.context.fillStyle = "black";
+                            this.context.fillText("You won!",200,135);
+                            this.stop();
+                        }
+                    })
+                    },
+                    stop : function() {
+                    clearInterval(this.interval);
+                    },
+                    clear : function() {
+                        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    },
+                    score : function() {
+                        this.context.font = "25px Georgia";
+                        this.context.fillStyle = "black";
+                        this.context.fillText(hitPieces+"/"+numberOfPieces,420,30);
+                    }
+                   
+            }
+            function component(width, height, color, x, y, type) {
+                this.type = type;
+                this.width = width;
+                this.height = height;
+                this.speed_x = Math.floor(Math.random() * 5 + 1);
+                this.speed_y = Math.floor(Math.random() * 5 + 1);
+                this.x = x;
+                this.y = y;
+                this.update = function() {
+                    ctx = myGameArea.context;
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.fillStyle = color;
+                    ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+                    ctx.restore();
+                }
+                this.newPos = function() {
+                    if (this.x - this.width / 2 < 0)
+                        this.speed_x = Math.floor(Math.random() * 5 + 1);
+                    else if ((this.x + this.width / 2) >= myGameArea.context.canvas.width)
+                        this.speed_x = Math.floor(Math.random() * 5 + 1) * (-1);
+                    if (this.y - this.height / 2 < 0)
+                        this.speed_y = Math.floor(Math.random() * 5 + 1) * (-1);
+                    else if ((this.y + this.height / 2) >= myGameArea.context.canvas.height)
+                        this.speed_y = Math.floor(Math.random() * 5 + 1);
+
+                    this.x += this.speed_x;
+                    this.y -= this.speed_y;
+                }
+            }
+            function updateGameArea() {
+                myGameArea.clear();
+                myGameArea.score();
+                for(myGamePiece of myGamePieces) {
+                    myGamePiece.newPos();
+                    myGamePiece.update();
+                }
+            }
+        </script>
+    </head>
+    <body onload="startGame()">
+        <h1>Canvas game</h1>
+    </body>
+</html>
